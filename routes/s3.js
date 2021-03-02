@@ -28,6 +28,22 @@ router.get('/buckets', function(req, res, next) {
 	
 });
 
+router.delete('/bucket', function(req, res, next) {
+	console.log(req.query);
+	if(req.query.name!=undefined) {
+		s3.delete_bucket(req.query.name, function(data) {
+			console.log(data);
+			res.send(data);
+		});
+	}
+	//console.log(13);
+	// s3.list_buckets({}, function(data) {
+	// 	console.log(data);
+	// 	res.send(data);
+	// });
+	
+});
+
 
 router.post('/auth', function(req, res, next) {
 	console.log(req.body);

@@ -63,8 +63,26 @@ class AWSS3 {
 			}
 			cb(response);
 		});
+	}
 
-		
+	delete_bucket(name, cb) {
+		var params = {
+			Bucket: name
+		};
+		this.s3.deleteBucket(params, function(err, data) {
+			let response = {
+				"status": "error"
+			};
+			if (err) {
+				console.log(err, err.stack); // an error occurred
+				response['message'] = 'Error in delete bucket.';
+			} else {
+				response['status'] = 'success';
+				response['message'] = 'Bucket deleted.';
+				response['data'] = data;
+			}
+			cb(response);
+		});
 	}
 }
 
