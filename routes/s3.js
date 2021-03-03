@@ -44,22 +44,38 @@ router.delete('/bucket', function(req, res, next) {
 	
 });
 
-
-router.post('/auth', function(req, res, next) {
+router.post('/bucket', function(req, res, next) {
 	console.log(req.body);
-	let response = {};
 	if(req.body.params!=undefined) {
-		response.id = 1;
-		response.email = req.body.params.user.email;
-		response.name = "Tamil";
-		response.role = "Admin";
-		response.token = "12345678";
-	} else {
-		response = {
-			"message" : "Invalid request"
-		};
+		s3.add_bucket(req.body.params, function(data) {
+			console.log(data);
+			res.send(data);
+		});
 	}
-	res.send(response);
 });
+
+router.get('/:bucket/objects', function(req, res, next) {
+	console.log(req.params);
+
+	let bucket = req.params.bucket;
+	s3.list_objects(bucket, function(data) {
+		console.log(data);
+		res.send(data);
+	});
+	
+});
+
+router.delete('/object', function(req, res, next) {
+	console.log(req.query);
+
+	if(req.query.bucket!=undefined) {
+		s3.delete_object(req.query, function(data) {
+			console.log(data);
+			res.send(data);
+		});
+	}
+	
+});
+
 
 module.exports = router;
