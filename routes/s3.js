@@ -1,15 +1,31 @@
 var express = require('express');
+var multer  = require('multer');
+var path = require('path');
 var router = express.Router();
+
+var storage = multer.diskStorage({
+	destination: function (req, file, cb) {
+	  cb(null, 'C:\\Tamil data\\dev\\node\\my-node-server\\uploads')
+	},
+	filename: function (req, file, cb) {
+		//cb(null, file.fieldname + '-' + Date.now())
+		cb(null, file.originalname)
+	}
+})
+
+var upload = multer({ 
+	storage: storage
+})
 
 var {AWSS3} = require('../modules/s3');
 
-const s3 = new AWSS3();
+//const s3 = new AWSS3();
 
 router.get('/add-bucket', function(req, res, next) {
 
 	//let s3 = new AWSS3();
 	//console.log(s3);
-	
+	const s3 = new AWSS3(req.user);
 	s3.add_bucket({'name': "tamilan1"}, function(data) {
 		console.log(data);
 		res.send(data);
@@ -21,6 +37,8 @@ router.get('/add-bucket', function(req, res, next) {
 
 router.get('/buckets', function(req, res, next) {
 
+	const s3 = new AWSS3(req.user);
+
 	s3.list_buckets({}, function(data) {
 		console.log(data);
 		res.send(data);
@@ -29,6 +47,7 @@ router.get('/buckets', function(req, res, next) {
 });
 
 router.delete('/bucket', function(req, res, next) {
+	const s3 = new AWSS3(req.user);
 	console.log(req.query);
 	if(req.query.name!=undefined) {
 		s3.delete_bucket(req.query.name, function(data) {
@@ -45,6 +64,7 @@ router.delete('/bucket', function(req, res, next) {
 });
 
 router.post('/bucket', function(req, res, next) {
+	const s3 = new AWSS3(req.user);
 	console.log(req.body);
 	if(req.body.params!=undefined) {
 		s3.add_bucket(req.body.params, function(data) {
@@ -55,6 +75,7 @@ router.post('/bucket', function(req, res, next) {
 });
 
 router.get('/:bucket/objects', function(req, res, next) {
+	const s3 = new AWSS3(req.user);
 	console.log(req.params);
 
 	let bucket = req.params.bucket;
@@ -66,6 +87,7 @@ router.get('/:bucket/objects', function(req, res, next) {
 });
 
 router.delete('/object', function(req, res, next) {
+	const s3 = new AWSS3(req.user);
 	console.log(req.query);
 
 	if(req.query.bucket!=undefined) {
@@ -75,6 +97,57 @@ router.delete('/object', function(req, res, next) {
 		});
 	}
 	
+});
+
+var _fileupload = upload.single('object');
+
+router.post('/createobject', function(req, res, next) {
+	const s3 = new AWSS3(req.user);
+	_fileupload(req, res, function (err) {
+		let response = {
+			"status" : "error" 
+		};
+		if (err instanceof multer.MulterError) {
+			response['message'] = 'File upload error.';
+			response['err'] = err;
+			res.send(response);
+		} else if (err) {
+			err['fname'] = '';
+			if(!("typ" in err)) {
+				err['err'] = 'File upload error.';
+			}
+			delete err.typ;
+			res.json(err)
+		} else {
+			//console.log(req.body);
+			// let _path = req.body.path+req.file.originalname;
+			// _path = path.normalize(_path);
+			
+			s3.add_object({
+				filepath: req.file.path,
+				bucket: req.body.bucket,
+				//path: _path,
+				name: req.file.originalname
+
+			}, function(data) {
+				console.log(data);
+				res.send(data);
+			});
+		}
+		
+		// console.log(req.file);
+		// res.send({'err':'', 'fpath': req.file.path});
+	})
+	console.log(req.file);
+	console.log(req.body);
+
+	// if(req.query.bucket!=undefined) {
+	// 	s3.delete_object(req.query, function(data) {
+	// 		console.log(data);
+	// 		res.send(data);
+	// 	});
+	// }
+	//res.send('res');
 });
 
 

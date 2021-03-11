@@ -1,42 +1,51 @@
 var AWS = require('aws-sdk');
 const fs = require('fs');
-
-
-// var s3  = new AWS.S3({
-//           accessKeyId: 'minioadmin' ,
-//           secretAccessKey: 'minioadmin' ,
-//           endpoint: 'https://192.168.77.32:9001' ,
-//           s3ForcePathStyle: true, // needed with minio?
-//           signatureVersion: 'v4',
-// 		  //s3DisableBodySigning: false
-// });
-
-// process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
+var config = require('../config/data');
 
 class AWSS3 {
-	constructor() {
+	constructor(user) {
+		
+		process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
+
 		this.s3  = new AWS.S3({
-			accessKeyId: 'minioadmin' ,
-			secretAccessKey: 'minioadmin' ,
+			accessKeyId: user.access_key,
+			secretAccessKey: user.secret_key,
 			endpoint: 'https://192.168.77.32:9001' ,
 			s3ForcePathStyle: true, // needed with minio?
 			signatureVersion: 'v4',
 			//s3DisableBodySigning: false
   		});
-		process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
+		// console.log(11);
+		// console.log(process.env.access_key);
+		// console.log(22);
 	}
+
+	// init(param) {
+	// 	console.log(11);
+	// 	console.log(process.env.access_key);
+	// 	console.log(22);
+	// 	this.s3  = new AWS.S3({
+	// 		accessKeyId: 'minioadmin' ,
+	// 		secretAccessKey: 'minioadmin' ,
+	// 		endpoint: 'https://192.168.77.32:9001' ,
+	// 		s3ForcePathStyle: true, // needed with minio?
+	// 		signatureVersion: 'v4',
+	// 		//s3DisableBodySigning: false
+  	// 	});
+	// }
 
 	add_bucket(param, cb) {
 		var params = {
-			Bucket: param.name
+			Bucket: param.bucket
 		};
+		console.log(params);
 		this.s3.createBucket(params, function(err, data) {
 			let response = {
 				"status": "error"
 			};
 			if (err) {
 				console.log(err, err.stack); // an error occurred
-				response['message'] = 'Error in add bucket.';
+				response['message'] = err.message;
 			} else {
 				response['status'] = 'success';
 				response['message'] = 'Bucket added.';
@@ -47,6 +56,7 @@ class AWSS3 {
 	}
 
 	list_buckets(param, cb) {
+		//this.init();
 		this.s3.listBuckets(function(err, data) {
 			// if (err) console.log(err, err.stack); // an error occurred
 			// else     console.log(data);           // successful response
@@ -55,7 +65,7 @@ class AWSS3 {
 			};
 			if (err) {
 				console.log(err, err.stack); // an error occurred
-				response['message'] = 'Error in list bucket.';
+				response['message'] = err.message;
 			} else {
 				response['status'] = 'success';
 				//response['message'] = 'Bucket added.';
@@ -75,7 +85,7 @@ class AWSS3 {
 			};
 			if (err) {
 				console.log(err, err.stack); // an error occurred
-				response['message'] = 'Error in delete bucket.';
+				response['message'] = err.message;
 			} else {
 				response['status'] = 'success';
 				response['message'] = 'Bucket deleted.';
@@ -85,40 +95,40 @@ class AWSS3 {
 		});
 	}
 
-	add_bucket(param, cb) {
-		var params = {
-			Bucket: param.bucket
-		};
+	// add_bucket(param, cb) {
+	// 	var params = {
+	// 		Bucket: param.bucket
+	// 	};
 
 		
-		// this.s3.waitFor('bucketExists', params, function(err, data) {
-		// 	if (err) console.log(err, err.stack); // an error occurred
-		// 	else     console.log(data);           // successful response
-		// 	console.log('waitfor');
-		// });
+	// 	// this.s3.waitFor('bucketExists', params, function(err, data) {
+	// 	// 	if (err) console.log(err, err.stack); // an error occurred
+	// 	// 	else     console.log(data);           // successful response
+	// 	// 	console.log('waitfor');
+	// 	// });
 
 
-		this.s3.createBucket(params, function(err, data) {
-			let response = {
-				"status": "error"
-			};
-			if (err) {
-				console.log(err, err.stack); // an error occurred
+	// 	this.s3.createBucket(params, function(err, data) {
+	// 		let response = {
+	// 			"status": "error"
+	// 		};
+	// 		if (err) {
+	// 			console.log(err, err.stack); // an error occurred
 				
-				response['message'] = 'Error in create bucket.';
+	// 			response['message'] = 'Error in create bucket.';
 
-				if(err.code=='BucketAlreadyOwnedByYou') {
-					response['message'] = 'Bucket already exists.';
-				}
-			} else {
-				response['status'] = 'success';
-				response['message'] = 'Bucket created.';
-				response['data'] = data;
-			}
-			console.log(12);
-			cb(response);
-		});
-	}
+	// 			if(err.code=='BucketAlreadyOwnedByYou') {
+	// 				response['message'] = 'Bucket already exists.';
+	// 			}
+	// 		} else {
+	// 			response['status'] = 'success';
+	// 			response['message'] = 'Bucket created.';
+	// 			response['data'] = data;
+	// 		}
+	// 		console.log(12);
+	// 		cb(response);
+	// 	});
+	// }
 
 	list_objects(bucket, cb) {
 		var params = {
@@ -133,7 +143,7 @@ class AWSS3 {
 			};
 			if (err) {
 				console.log(err, err.stack); // an error occurred
-				response['message'] = 'Error in list bucket.';
+				response['message'] = err.message;
 			} else {
 				response['status'] = 'success';
 				//response['message'] = 'Bucket added.';
@@ -154,10 +164,34 @@ class AWSS3 {
 			};
 			if (err) {
 				console.log(err, err.stack); // an error occurred
-				response['message'] = 'Error in delete object.';
+				response['message'] = err.message;
 			} else {
 				response['status'] = 'success';
 				response['message'] = 'Object deleted.';
+				response['data'] = data;
+			}
+			cb(response);
+		});
+	}
+
+	add_object(param, cb) {
+		console.log(param);
+		var params = {
+			Bucket: param.bucket,
+			//Key: 'tmp/'+param.name,
+			Key: param.name,
+			Body: fs.readFileSync(param.filepath)
+		};
+		this.s3.upload(params, function(err, data) {
+			let response = {
+				"status": "error"
+			};
+			if (err) {
+				console.log(err, err.stack); // an error occurred
+				response['message'] = err.message;
+			} else {
+				response['status'] = 'success';
+				response['message'] = 'Object added.';
 				response['data'] = data;
 			}
 			cb(response);
