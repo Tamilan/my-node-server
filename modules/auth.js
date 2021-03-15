@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken')
 const enc = require('../modules/encryption');
 const Redis = require('ioredis');
+const User = require('../model/user');
 
 class Auth {
 	constructor() {
@@ -101,6 +102,50 @@ class Auth {
 		})
 	}
 
+	authenticate_user_token(req, res, next) {
+		const authHeader = req.headers['authorization']
+		const token = authHeader && authHeader.split(' ')[1]
+		if (token == null) return res.sendStatus(401)
+		console.log(token);
+		jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user) => {
+			console.log(err)
+			if (err) return res.status(401).json({
+				"status": "invalid_token",
+				"message": err.message
+			})
+			console.log(user);
+
+			let user_data = await User.find({ _id : user.token });
+
+			//if(user_data_  );
+
+			if(!user_data || user_data.length==0) {
+				return res.status(401).json({
+					"status": "invalid_token",
+					"message": "Invalid user"
+				});
+			}
+
+			user_data.access_key = 'minioadmin';
+			user_data.secret_key = 'minioadmin';
+			// let user_data = {
+			// 	access_key: access_data[0],
+			// 	secret_key: access_data[1],
+			// }
+			
+			// console.log('sa');
+			// console.log(process.env.access_key);
+
+			// //config['access_key'] = access_data[0];
+			// process.env.access_key = access_data[0];
+			// process.env.access_key = access_data[0];
+			// console.log(process.env.access_key);
+			//console.log(user_data);
+			req.user = user_data
+			next()
+		})
+	}
+
 	authenticate_token(req, res, next) {
 		const authHeader = req.headers['authorization']
 		const token = authHeader && authHeader.split(' ')[1]
@@ -112,7 +157,7 @@ class Auth {
 				"status": "invalid_token",
 				"message": err.message
 			})
-			//console.log(user);
+			console.log(user);
 			let dec_token = enc.decrypt(user.token);
 			let access_data = dec_token.split(':');
 			let user_data = {
