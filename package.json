@@ -22,6 +22,8 @@
     "mysql": "^2.18.1",
     "nodemon": "^2.0.7",
     "passport": "^0.4.1",
-    "passport-jwt": "^4.0.0"
+    "passport-jwt": "^4.0.0",
+    "qrcode": "^1.4.4",
+    "speakeasy": "^2.0.0"
   }
 }

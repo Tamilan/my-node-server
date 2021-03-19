@@ -6,7 +6,7 @@ const Redis = require('ioredis');
 const users = require('./../modules/users');
 
 const User = require('../model/user'); 
-
+const speakeasy = require('speakeasy');
 
 var router = express.Router();
 
@@ -102,7 +102,7 @@ router.post('/signup', async function(req, res, next) {
 	//res.send(response);
 });
 
-router.post('/auth', async function(req, res, next) {
+router.post('/auth', async (req, res) => {
 	console.log(req.body);
 	let response = {};
 
@@ -120,6 +120,32 @@ router.post('/auth', async function(req, res, next) {
 			}); 
 		} else { 
 			if (user.validPassword(req.body.password)) {
+
+				if(user.mfa_secret) {
+					if(!req.body.code || req.body.code=='') {
+						return res.status(206).send({ 
+							status : 'error',
+							action: 'show_auth_input',
+							message : "Enter the MFA code."
+						}); 
+					}
+
+					let isVerified = speakeasy.totp.verify({
+						secret: user.mfa_secret,
+						encoding: 'base32',
+						token: req.body.code
+					});
+		
+					if (!isVerified) {
+						console.log(`ERROR: Invalid AUTH code`);
+		
+						return res.send({
+							"status": 'error',
+							"message": "Invalid MFA Code."
+						});
+					}
+				}
+
 				console.log(user);
 				var auth = new Auth();
 				// 	let tkn = req.body.access_key+':'+req.body.secret_key;
@@ -149,7 +175,7 @@ router.post('/auth', async function(req, res, next) {
 				return res.status(201).send(response);
 			} else { 
 				return res.status(400).send({ 
-					message : "Wrong Password"
+					message : "Invalid Email or Password."
 				}); 
 			} 
 		} 

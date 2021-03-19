@@ -7,7 +7,7 @@ module.exports = {
 
 	connectToServer: function( callback ) {
 		//{ useNewUrlParser: true, useUnifiedTopology: true }
-		MongoClient.connect( url,  { useNewUrlParser: true }, function( err, client ) {
+		MongoClient.connect( url,  { useNewUrlParser: true, useUnifiedTopology: true }, function( err, client ) {
 			_db  = client.db('s3');
 			return callback( err );
 		});

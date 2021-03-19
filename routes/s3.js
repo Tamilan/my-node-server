@@ -151,4 +151,24 @@ router.post('/createobject', function(req, res, next) {
 });
 
 
+router.post('/policy', function(req, res) {
+	console.log(req.body)
+
+	var mc = require('../modules/mc_admin');
+
+	console.log(mc);
+
+	mc.run();
+	//let s3 = new AWSS3();
+	//console.log(s3);
+	// const s3 = new AWSS3(req.user);
+	// s3.add_bucket({'name': "tamilan1"}, function(data) {
+	// 	console.log(data);
+	// 	res.send(data);
+	// });
+	res.send('apple');
+	//console.log('res');
+	
+});
+
 module.exports = router;

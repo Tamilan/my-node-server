@@ -20,7 +20,14 @@ const UserSchema = mongoose.Schema({
         type : String
     }, 
     hash : String, 
-    salt : String 
+    salt : String,
+    mfa_secret: String,
+    temp_secret: String,
+    mfa_url: String,
+    created_on: {
+        type: Date,
+        default: Date.now
+    }
 }); 
   
 // Method to set salt and hash the password for a user 
@@ -65,9 +72,10 @@ UserSchema.methods.user_data = function() {
 	return {
 		name: this.name,
 		email: this.email,
-		gender: this.gender
+		gender: this.gender,
+        mfa: (this.mfa_secret) ? true : false
 	}
-}; 
+};
 
 // UserSchema.pre('save', function (next) {
 //     var self = this;

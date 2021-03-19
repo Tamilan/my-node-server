@@ -73,10 +73,17 @@ class Auth {
 				return cb(err);
 			}
 
+			var user_data = await User.findOne({ _id : user.token });
+
+			if(!user_data) {
+				return cb('invalid_user', {})
+			}
+
 			let payload = { 
 				token: user.token,
 				createdon: new Date().getTime()
 			}
+
 			const _access_token = this.generate_token(payload);
 			const _refresh_token = this.generate_refresh_token(payload);
 
@@ -106,16 +113,16 @@ class Auth {
 		const authHeader = req.headers['authorization']
 		const token = authHeader && authHeader.split(' ')[1]
 		if (token == null) return res.sendStatus(401)
-		console.log(token);
+		//console.log(token);
 		jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user) => {
 			console.log(err)
 			if (err) return res.status(401).json({
 				"status": "invalid_token",
 				"message": err.message
 			})
-			console.log(user);
+			//console.log(user);
 
-			let user_data = await User.find({ _id : user.token });
+			var user_data = await User.findOne({ _id : user.token });
 
 			//if(user_data_  );
 
@@ -126,8 +133,9 @@ class Auth {
 				});
 			}
 
-			user_data.access_key = 'minioadmin';
-			user_data.secret_key = 'minioadmin';
+			user_data['access_key'] = 'minioadmin';
+			user_data['secret_key'] = 'minioadmin';
+			//console.log(user_data);
 			// let user_data = {
 			// 	access_key: access_data[0],
 			// 	secret_key: access_data[1],
@@ -157,7 +165,7 @@ class Auth {
 				"status": "invalid_token",
 				"message": err.message
 			})
-			console.log(user);
+			//console.log(user);
 			let dec_token = enc.decrypt(user.token);
 			let access_data = dec_token.split(':');
 			let user_data = {
