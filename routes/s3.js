@@ -150,15 +150,14 @@ router.post('/createobject', function(req, res, next) {
 	//res.send('res');
 });
 
-
-router.post('/policy', function(req, res) {
-	console.log(req.body)
-
+router.get('/policies', async function(req, res) {
+	//console.log(req.body)
+	
 	var mc = require('../modules/mc_admin');
 
-	console.log(mc);
+	//console.log(mc);
 
-	mc.run();
+	let result = await mc.list_policy();
 	//let s3 = new AWSS3();
 	//console.log(s3);
 	// const s3 = new AWSS3(req.user);
@@ -166,9 +165,44 @@ router.post('/policy', function(req, res) {
 	// 	console.log(data);
 	// 	res.send(data);
 	// });
-	res.send('apple');
+	res.send(result);
 	//console.log('res');
 	
+});
+
+
+
+router.post('/policy', async function(req, res) {
+	console.log(req.body)
+	//return res.send('123');
+	var mc = require('../modules/mc_admin');
+
+	console.log(mc);
+
+	let result = await mc.add_policy(req.body);
+	//let s3 = new AWSS3();
+	//console.log(s3);
+	// const s3 = new AWSS3(req.user);
+	// s3.add_bucket({'name': "tamilan1"}, function(data) {
+	// 	console.log(data);
+	// 	res.send(data);
+	// });
+	res.send(result);
+	//console.log('res');
+});
+
+
+router.get('/policy/:policy_name', async function(req, res) {
+	console.log(req.params);
+	
+	var mc = require('../modules/mc_admin');
+
+	console.log(mc);
+
+	let result = await mc.get_policy(req.params.policy_name);
+
+	res.send(result);
+	//console.log('res');
 });
 
 module.exports = router;

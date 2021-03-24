@@ -26,10 +26,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 //app.use(auth.initialize());
 
-mongo_db.connectToServer( function( err, client ) {
-	if (err) console.log(err);
-	else console.log('MongoDB connected');
-});
+// mongo_db.connectToServer( function( err, client ) {
+// 	if (err) console.log(err);
+// 	else console.log('MongoDB connected');
+// });
 
 // Mongodb connection url
 var MONGODB_URI = "mongodb://localhost:27017/s3";
